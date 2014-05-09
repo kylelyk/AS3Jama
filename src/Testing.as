@@ -1,14 +1,17 @@
 package {
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import Matrix;
+	import LUDecomposition;
+	
 	
 	/**
 	 * ...
 	 * @author Kyle Howell
 	 */
-	public class Main extends Sprite {
+	public class Testing extends Sprite {
 		
-		public function Main():void {
+		public function Testing():void {
 			if (stage)
 				init();
 			else
@@ -19,8 +22,7 @@ package {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			
 			trace("Hello World!");
+			var lu:LUDecomposition = new LUDecomposition(new Matrix(2, 3));
 		}
-	
 	}
-
 }
