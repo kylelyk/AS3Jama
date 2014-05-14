@@ -191,7 +191,7 @@ package {
 		 */
 		public function getL():Matrix {
 			var X:Matrix = new Matrix(m, n);
-			var L:Vector.<Vector.<Number>> = X.getArray();
+			var L:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					if (i > j) {
@@ -211,7 +211,7 @@ package {
 		 */
 		public function getU():Matrix {
 			var X:Matrix = new Matrix(n, n);
-			var U:Vector.<Vector.<Number>> = X.getArray();
+			var U:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < n; i++) {
 				for (var j:int = 0; j < n; j++) {
 					if (i <= j) {
@@ -278,7 +278,7 @@ package {
 			// Copy right hand side with pivoting
 			var nx:int = B.columns;
 			var Xmat:Matrix = B.getMatrix(-1, -1, 0, nx - 1, piv);
-			var X:Vector.<Vector.<Number>> = Xmat.getArray();
+			var X:Vector.<Vector.<Number>> = Xmat.data;
 			
 			var k:int, i:int, j:int;
 			// Solve L*Y = B(piv,:)

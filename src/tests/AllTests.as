@@ -1,5 +1,6 @@
 package tests {
 	import asunit.framework.TestSuite;
+	import tests.MatrixTests;
 	
 	/**
 	 * ...
@@ -9,8 +10,12 @@ package tests {
 		public function AllTests() {
 			super();
 			
-			//Binary Tree Class Tests (Relies on BinarySearchTree.addData())
-			addTest(new MatrixTests("TestInorderTraverse"))
+			//Matrix Class Tests
+			addTest(new MatrixTests("TestConstructor"));
+			addTest(new MatrixTests("TestConstructFunctions"));
+			addTest(new MatrixTests("TestRemainingStaticFunctions"));
+			addTest(new MatrixTests("TestCopyFunctions"));
+			addTest(new MatrixTests("TestGetSetFunctions"));
 		}
 	}
 }

@@ -3,7 +3,8 @@ package {
 	import flash.events.Event;
 	import Matrix;
 	import LUDecomposition;
-	
+	import asunit.textui.TestRunner;
+	import tests.AllTests;
 	
 	/**
 	 * ...
@@ -21,8 +22,9 @@ package {
 		private function init(e:Event = null):void {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			
-			trace("Hello World!");
-			var lu:LUDecomposition = new LUDecomposition(new Matrix(2, 3));
+			var unittests:TestRunner = new TestRunner();
+			stage.addChild(unittests);
+			unittests.start(tests.AllTests, null, TestRunner.SHOW_TRACE);
 		}
 	}
 }

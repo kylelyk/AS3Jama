@@ -70,7 +70,7 @@ package {
 		   Constructors
 		 * ------------------------ */
 		
-		/** If a 2D array is given, create a Matrix with that array ignoring all other parameters. Otherwise construct an m-by-n matrix with the number of your chosing if a 2D array is not given, otherwise create a Matrix with the 2D array.
+		/** If a 2D array is given, create a Matrix with that array ignoring all other parameters. Otherwise construct an m-by-n matrix with the scalar fill value of your chosing.
 		 * @param m    Number of rows.
 		 * @param n    Number of colums.
 		 * @param fill Fill the matrix with this scalar value.
@@ -81,13 +81,13 @@ package {
 				if (!isValidArray(A)) {
 					throw new ArgumentError("Supplied 2D array is invalid and cannot be used to create a Matrix.");
 				}
-				this.m = A[0].length;
-				this.n = A.length;
+				this.m = A.length;
+				this.n = A[0].length;
 				this.A = A;
-			}else {
+			} else {
 				this.m = m;
-				this.n = n;	
-				this.A = constructArray(m, n);
+				this.n = n;
+				this.A = constructArray(m, n, fill);
 			}
 		}
 		
@@ -96,20 +96,55 @@ package {
 		 * ------------------------ */
 		
 		/**
-		 * Construct an m-by-n constant matrix.
-		 * @param m    Number of rows.
-		 * @param n    Number of colums.
-		 * @param s    Fill the matrix with this scalar value.
+		 * Construct a matrix from a copy of a 2-D array.
+		 * @param A   	Two-dimensional array of numbers.
+		 * @throws 		ArgumentError All rows must have the same length
 		 */
-		static public function constMatrix(m:int, n:int, s:Number):Matrix {
+		public static function constructWithCopy(A:Vector.<Vector.<Number>>):Matrix {
+			var m:int = A.length;
+			var n:int = A[0].length;
+			var X:Matrix = new Matrix(m, n);
+			var C:Vector.<Vector.<Number>> = X.data;
+			for (var i:int = 0; i < m; i++) {
+				if (A[i].length != n) {
+					throw new ArgumentError("All rows must have the same length.");
+				}
+				for (var j:int = 0; j < n; j++) {
+					C[i][j] = A[i][j];
+				}
+			}
+			return X;
+		}
+		
+		/**
+		 * Construct a matrix from a 2-D array.
+		 * @param A   	Two-dimensional array of numbers.
+		 * @throws 		ArgumentError All rows must have the same length
+		 */
+		public static function construct(A:Vector.<Vector.<Number>>):Matrix {
+			return new Matrix(-1, -1, -1, A);
+		}
+		
+		/**
+		 * Construct a 2D Array without the Matrix class.
+		 * @param A   	Two-dimensional array of numbers.
+		 * @param fill  Fill the matrix with this scalar value.
+		 * @throws 		ArgumentError All rows must have the same length
+		 */
+		public static function constructArray(m:int, n:int, fill:Number = 0):Vector.<Vector.<Number>> {
+			if (m < 1 || n < 1) {
+				throw new ArgumentError("Array dimensions should be more than 0.");
+			}
 			var mat:Vector.<Vector.<Number>> = new Vector.<Vector.<Number>>(m);
 			for (var i:int = 0; i < m; i++) {
 				mat[i] = new Vector.<Number>(n);
-				for (var j:int = 0; j < n; j++) {
-					mat[i][j] = s;
+				if (fill != 0) {
+					for (var j:int = 0; j < n; j++) {
+						mat[i][j] = fill;
+					}
 				}
 			}
-			return construct(mat);
+			return mat;
 		}
 		
 		public static function isValidMat(A:Matrix):Boolean {
@@ -130,75 +165,6 @@ package {
 		}
 		
 		/**
-		 * Construct a matrix from a one-dimensional packed array
-		 * @param vals 	One-dimensional array of doubles, packed by columns (ala Fortran).
-		 * @param m    	Number of rows.
-		 * @error  		ArgumentError Array length must be a multiple of m.
-		 */
-		/*public Matrix (double vals[], int m) {
-		   this.m = m;
-		   n = (m != 0 ? vals.length/m : 0);
-		   if (m*n != vals.length) {
-		   throw new IllegalArgumentException("Array length must be a multiple of m.");
-		   }
-		   A = new double[m][n];
-		   for (int i = 0; i < m; i++) {
-		   for (int j = 0; j < n; j++) {
-		   A[i][j] = vals[i+j*m];
-		   }
-		   }
-		 }*/
-		
-		/* ------------------------
-		   Public Methods
-		 * ------------------------ */
-		
-		/**
-		 * Construct a matrix from a copy of a 2-D array.
-		 * @param A   	Two-dimensional array of numbers.
-		 * @throws 		ArgumentError All rows must have the same length
-		 */
-		public static function constructWithCopy(A:Vector.<Vector.<Number>>):Matrix {
-			var m:int = A.length;
-			var n:int = A[0].length;
-			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
-			for (var i:int = 0; i < m; i++) {
-				if (A[i].length != n) {
-					throw new ArgumentError("All rows must have the same length.");
-				}
-				for (var j:int = 0; j < n; j++) {
-					C[i][j] = A[i][j];
-				}
-			}
-			return X;
-		}
-		
-		/**
-		 * Construct a matrix from a 2-D array.
-		 * @param A   	Two-dimensional array of numbers.
-		 * @throws 		ArgumentError All rows must have the same length
-		 */
-		public static function construct(A:Vector.<Vector.<Number>>):Matrix {
-			var X:Matrix = new Matrix(A.length, A[0].length);
-			X.A = A;
-			return X;
-		}
-		
-		/**
-		 * Construct a 2D Array without the Matrix class.
-		 * @param A   	Two-dimensional array of numbers.
-		 * @throws 		ArgumentError All rows must have the same length
-		 */
-		public static function constructArray(m:int, n:int):Vector.<Vector.<Number>> {
-			var mat:Vector.<Vector.<Number>> = new Vector.<Vector.<Number>>(m);
-			for (var i:int = 0; i < m; i++) {
-				mat[i] = new Vector.<Number>(n);
-			}
-			return mat;
-		}
-		
-		/**
 		 * Flips a 1xN horizontal array into a Nx1 vertical array
 		 * @param A   	Two-dimensional array of numbers.
 		 * @throws 		ArgumentError All rows must have the same length
@@ -211,17 +177,19 @@ package {
 			return M;
 		}
 		
-		/** Generate matrix with random elements
+		/** Generate matrix with random elements: min <= elm < max
 		 * @param m    Number of rows.
 		 * @param n    Number of colums.
+		 * @param min  The minimum value of an element.
+		 * @param max  The maximum value of an element.
 		 * @return     An m-by-n matrix with uniformly distributed random elements.
 		 */
-		public static function random(m:int, n:int):Matrix {
+		public static function random(m:int, n:int, min:Number = 0, max:Number = 1):Matrix {
 			var A:Matrix = new Matrix(m, n);
-			var X:Vector.<Vector.<Number>> = A.getArray();
+			var X:Vector.<Vector.<Number>> = A.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
-					X[i][j] = Math.random();
+					X[i][j] = Math.random() * (max - min) + min;
 				}
 			}
 			return A;
@@ -234,7 +202,7 @@ package {
 		 */
 		public static function identity(m:int, n:int):Matrix {
 			var A:Matrix = new Matrix(m, n);
-			var X:Vector.<Vector.<Number>> = A.getArray();
+			var X:Vector.<Vector.<Number>> = A.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					X[i][j] = (i == j ? 1.0 : 0.0);
@@ -252,7 +220,7 @@ package {
 		 */
 		public function copy():Matrix {
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = A[i][j];
@@ -265,15 +233,7 @@ package {
 		 * Clone the Matrix object.
 		 */
 		public function clone():Object {
-			return this.copy();
-		}
-		
-		/**
-		 * Access the internal two-dimensional array.
-		 * @return     Pointer to the two-dimensional array of matrix elements.
-		 */
-		public function getArray():Vector.<Vector.<Number>> {
-			return A;
+			return copy();
 		}
 		
 		/**
@@ -335,14 +295,14 @@ package {
 		 * Leaving default will ignore those options.
 		 *
 		 * Valid uses include:
-		 * A.getMatrix(0, 3, 0, 4);										//get columns 0 through 4 of rows 0 through 3
-		 * A.getMatrix(0, 3, -1, -1, null, <int>[1,4,6,7]);				//get columns 1,4,6,7 of rows 0 through 3
-		 * A.getMatrix(-1, -1, -1, -1, <int>[1,2,6], <int>[1,4,6]);		//matrix returned:	(1,1)	(1,4)	(1,6)
-		 * 																					(2,1)	(2,4)	(2,6)
-		 * 																					(6,1)	(6,4)	(6,6)
-		 * A.getMatrix(-1, -1, 3, 5, <int>[3,5,6]);						//get rows 3,5,6 of columns 3 through 5
+		 * A.getMatrix(0, 3, 0, 4);											//get columns 0 through 4 of rows 0 through 3
+		 * A.getMatrix(0, 3, -1, -1, null, new <int>[1,4,6,7]);				//get columns 1,4,6,7 of rows 0 through 3
+		 * A.getMatrix(-1, -1, -1, -1, new <int>[1,2,6], new <int>[1,4,6]);	//matrix returned:	(1,1)	(1,4)	(1,6)
+		 * 																						(2,1)	(2,4)	(2,6)
+		 * 																						(6,1)	(6,4)	(6,6)
+		 * A.getMatrix(-1, -1, 3, 5, new <int>[3,5,6]);						//get rows 3,5,6 of columns 3 through 5
 		 *
-		 * Calling A.getMatrix(1, 4, 0, 3, <int>[1,2,4], <int>[3,4]) is equivalent to A.getMatrix(1, 4, 0, 3) because the first valid parameter for row and column specification is always used.
+		 * Calling A.getMatrix(1, 4, 0, 3, new <int>[1,2,4], new <int>[3,4]) is equivalent to A.getMatrix(1, 4, 0, 3) because the first valid parameter for row and column specification is always used.
 		 *
 		 * Specifying a smaller final row/column index than the initial row/column index reverses those rows/columns.
 		 * Additionally, the individual values in the arrays can be in any order and repeats are allowed.
@@ -352,83 +312,119 @@ package {
 		 * @param c0   Initial column index
 		 * @param c1   Final column index
 		 * @return     A(i0:i1,j0:j1)
-		 * @exception  ArrayIndexOutOfBoundsException Submatrix indices
+		 * @throws  IllegalOperationError 	If not enough information if given (too many defaults left unchanged).
+		 * @throws  RangeError 				If matrix index is out of bounds.
 		 */
 		public function getMatrix(r0:int = -1, r1:int = -1, c0:int = -1, c1:int = -1, rvect:Vector.<int> = null, cvect:Vector.<int> = null):Matrix {
-			//throw new IllegalOperationError("Function has not been migrated/implemented yet. Please help us out!!)");
+			
+			if ((r0 == -1 || r1 == -1) && !rvect) {
+				throw new IllegalOperationError("Either Column list or Column range must be specified.");
+			}else if ((c0 == -1 || c1 == -1) && !cvect) {
+				throw new IllegalOperationError("Either Row list or Row range must be specified.");
+			}
+			
 			var B:Vector.<Vector.<Number>>
-			var X:Matrix
+			var X:Matrix;
 			var i:int, j:int;
-			if (r0 != -1 && r1 != -1) {
-				if (c0 != -1 && c1 != -1) {
+			var rRange:Boolean = (r0 != -1 || r1 != -1);
+			var cRange:Boolean = (c0 != -1 || c1 != -1);
+			if (rRange) {
+				if (cRange) {
 					
 					//Row range and Column range
-					X = new Matrix(r1 - r0 + 1, c1 - c0 + 1);
-					B = X.getArray();
+					X = new Matrix(Math.abs(r1 - r0) + 1, Math.abs(c1 - c0) + 1);
+					B = X.data;
 					try {
-						for (i = r0; i <= r1; i++) {
-							for (j = c0; j <= c1; j++) {
-								B[i - r0][j - c0] = A[i][j];
+						if (r0 <= r1 && c0 <= c1) {
+							for (i = r0; i <= r1; i++) {
+								for (j = c0; j <= c1; j++) {
+									B[i - r0][j - c0] = A[i][j];
+								}
+							}
+						} else if (c0 <= c1) {
+							for (i = r0; i >= r1; i--) {
+								for (j = c0; j <= c1; j++) {
+									trace("Setting (" + (r0 - i) + "," + (j - c0) + ") to " + A[i][j]);
+									B[r0 - i][j - c0] = A[i][j];
+								}
+							}
+						} else if (r0 <= r1) {
+							for (i = r0; i <= r1; i++) {
+								for (j = c0; j >= c1; j--) {
+									B[i - r0][c0 - j] = A[i][j];
+								}
+							}
+						} else {
+							for (i = r0; i >= r1; i--) {
+								for (j = c0; j >= c1; j--) {
+									B[r0 - i][c0 - j] = A[i][j];
+								}
 							}
 						}
 					}
 					catch (e:Error) {
-						throw new IllegalOperationError("Submatrix indices are out of bounds.");
+						throw new RangeError("Submatrix indices are out of bounds.");
 					}
 					return X;
 					
 				} else {
 					
-					if (!cvect) {
-						throw new IllegalOperationError("Either Column list or Column range must be specified.");
-					}
+					
 					//Row range, Column list
-					X = new Matrix(r1 - r0 + 1, cvect.length);
-					B = X.getArray();
+					X = new Matrix(Math.abs(r1 - r0) + 1, cvect.length);
+					B = X.data;
 					try {
-						for (i = r0; i <= r1; i++) {
-							for (j = 0; j < cvect.length; j++) {
-								B[i - r0][j] = A[i][cvect[j]];
+						if (r0 <= r1) {
+							for (i = r0; i <= r1; i++) {
+								for (j = 0; j < cvect.length; j++) {
+									B[i - r0][j] = A[i][cvect[j]];
+								}
+							}
+						} else {
+							for (i = r0; i >= r1; i--) {
+								for (j = 0; j < cvect.length; j++) {
+									B[r0 - i][j] = A[i][cvect[j]];
+								}
 							}
 						}
 					}
 					catch (e:Error) {
-						throw new IllegalOperationError("Submatrix indices are out of bounds.");
+						throw new RangeError("Submatrix indices are out of bounds.");
 					}
 					return X;
 					
 				}
 			} else {
-				
-				if (!rvect) {
-					throw new IllegalOperationError("Either Column list or Column range must be specified.");
-				}
-				if (c0 != -1 && c1 != -1) {
+				if (cRange) {
 					
 					//Row list, Column range
-					X = new Matrix(rvect.length, c1 - c0 + 1);
-					B = X.getArray();
+					X = new Matrix(rvect.length, Math.abs(c1 - c0) + 1);
+					B = X.data;
 					try {
-						for (i = 0; i < rvect.length; i++) {
-							for (j = c0; j <= c1; j++) {
-								B[i][j - c0] = A[rvect[i]][j];
+						if (c0 <= c1) {
+							for (i = 0; i < rvect.length; i++) {
+								for (j = c0; j <= c1; j++) {
+									B[i][j - c0] = A[rvect[i]][j];
+								}
+							}
+						} else {
+							for (i = 0; i < rvect.length; i++) {
+								for (j = c0; j >= c1; j--) {
+									B[i][c0 - j] = A[rvect[i]][j];
+								}
 							}
 						}
 					}
 					catch (e:Error) {
-						throw new IllegalOperationError("Submatrix indices are out of bounds.");
+						throw new RangeError("Submatrix indices are out of bounds.");
 					}
 					return X;
 					
 				} else {
 					
-					if (!cvect) {
-						throw new IllegalOperationError("Either Row list or Row range must be specified.");
-					}
-					
 					//Row list, Column list
 					X = new Matrix(rvect.length, cvect.length);
-					B = X.getArray();
+					B = X.data;
 					try {
 						for (i = 0; i < rvect.length; i++) {
 							for (j = 0; j < cvect.length; j++) {
@@ -437,78 +433,13 @@ package {
 						}
 					}
 					catch (e:Error) {
-						throw new IllegalOperationError("Submatrix indices are out of bounds.");
+						throw new RangeError("Submatrix indices are out of bounds.");
 					}
 					return X;
+					
 				}
 			}
 		}
-		
-		/** Get a submatrix.
-		   @param r    Array of row indices.
-		   @param c    Array of column indices.
-		   @return     A(r(:),c(:))
-		   @exception  ArrayIndexOutOfBoundsException Submatrix indices
-		 */
-		/*public Matrix getMatrix (int[] r, int[] c) {
-		   Matrix X = new Matrix(r.length,c.length);
-		   double[][] B = X.getArray();
-		   try {
-		   for (int i = 0; i < r.length; i++) {
-		   for (int j = 0; j < c.length; j++) {
-		   B[i][j] = A[r[i]][c[j]];
-		   }
-		   }
-		   } catch(ArrayIndexOutOfBoundsException e) {
-		   throw new ArrayIndexOutOfBoundsException("Submatrix indices");
-		   }
-		   return X;
-		 }*/
-		
-		/** Get a submatrix.
-		   @param i0   Initial row index
-		   @param i1   Final row index
-		   @param c    Array of column indices.
-		   @return     A(i0:i1,c(:))
-		   @exception  ArrayIndexOutOfBoundsException Submatrix indices
-		 */
-		
-		/*public Matrix getSubMatrix (int i0, int i1, int[] c) {
-		   Matrix X = new Matrix(i1-i0+1,c.length);
-		   double[][] B = X.getArray();
-		   try {
-		   for (int i = i0; i <= i1; i++) {
-		   for (int j = 0; j < c.length; j++) {
-		   B[i-i0][j] = A[i][c[j]];
-		   }
-		   }
-		   } catch(ArrayIndexOutOfBoundsException e) {
-		   throw new ArrayIndexOutOfBoundsException("Submatrix indices");
-		   }
-		   return X;
-		 }*/
-		
-		/** Get a submatrix.
-		   @param r    Array of row indices.
-		   @param j0   Initial column index
-		   @param j1   Final column index
-		   @return     A(r(:),j0:j1)
-		   @exception  ArrayIndexOutOfBoundsException Submatrix indices
-		 */
-		/*public Matrix getMatrix (int[] r, int j0, int j1) {
-		   Matrix X = new Matrix(r.length,j1-j0+1);
-		   double[][] B = X.getArray();
-		   try {
-		   for (int i = 0; i < r.length; i++) {
-		   for (int j = j0; j <= j1; j++) {
-		   B[i][j-j0] = A[r[i]][j];
-		   }
-		   }
-		   } catch(ArrayIndexOutOfBoundsException e) {
-		   throw new ArrayIndexOutOfBoundsException("Submatrix indices");
-		   }
-		   return X;
-		 }*/
 		
 		/** Set a single element.
 		 * @param i    Row index.
@@ -530,27 +461,116 @@ package {
 		 * @throws  	IllegalOperationError Thrown when matrix indices are out of bounds.
 		 */
 		public function setMatrix(X:Matrix, r0:int = -1, r1:int = -1, c0:int = -1, c1:int = -1, rvect:Vector.<int> = null, cvect:Vector.<int> = null):void {
-			if (r0 != -1 && r1 != -1) {
-				if (c0 != -1 && c1 != -1) {
-					if (X.rows != r1 - r0 + 1 || X.columns != c1 - c0 + 1) {
-						throw new IllegalOperationError("Matrix dimensions do not match the target submatrix.");
-					}
+			if ((r0 == -1 || r1 == -1) && !rvect) {
+				throw new IllegalOperationError("Either Column list or Column range must be specified.");
+			}else if ((c0 == -1 || c1 == -1) && !cvect) {
+				throw new IllegalOperationError("Either Row list or Row range must be specified.");
+			}
+			
+			var B:Vector.<Vector.<Number>>
+			var X:Matrix;
+			var i:int, j:int;
+			var rRange:Boolean = (r0 != -1 || r1 != -1);
+			var cRange:Boolean = (c0 != -1 || c1 != -1);
+			if (rRange) {
+				if (cRange) {
+					
 					//Row range and Column range
 					try {
-						for (var i:int = r0; i <= r1; i++) {
-							for (var j:int = c0; j <= c1; j++) {
-								A[i][j] = X.getAt(i - r0, j - c0);
+						if (r0 <= r1 && c0 <= c1) {
+							for (i = r0; i <= r1; i++) {
+								for (j = c0; j <= c1; j++) {
+									B[i - r0][j - c0] = A[i][j];
+								}
+							}
+						} else if (c0 <= c1) {
+							for (i = r0; i >= r1; i--) {
+								for (j = c0; j <= c1; j++) {
+									trace("Setting (" + (r0 - i) + "," + (j - c0) + ") to " + A[i][j]);
+									B[r0 - i][j - c0] = A[i][j];
+								}
+							}
+						} else if (r0 <= r1) {
+							for (i = r0; i <= r1; i++) {
+								for (j = c0; j >= c1; j--) {
+									B[i - r0][c0 - j] = A[i][j];
+								}
+							}
+						} else {
+							for (i = r0; i >= r1; i--) {
+								for (j = c0; j >= c1; j--) {
+									B[r0 - i][c0 - j] = A[i][j];
+								}
 							}
 						}
 					}
 					catch (e:Error) {
-						throw new IllegalOperationError("Submatrix indices are out of bounds.");
+						throw new RangeError("Submatrix indices are out of bounds.");
 					}
+					return X;
+					
 				} else {
-					throw new IllegalOperationError("Function has not been migrated/implemented yet. Please help us out!!)");
+					
+					
+					//Row range, Column list
+					try {
+						if (r0 <= r1) {
+							for (i = r0; i <= r1; i++) {
+								for (j = 0; j < cvect.length; j++) {
+									B[i - r0][j] = A[i][cvect[j]];
+								}
+							}
+						} else {
+							for (i = r0; i >= r1; i--) {
+								for (j = 0; j < cvect.length; j++) {
+									B[r0 - i][j] = A[i][cvect[j]];
+								}
+							}
+						}
+					}
+					catch (e:Error) {
+						throw new RangeError("Submatrix indices are out of bounds.");
+					}
+					
 				}
 			} else {
-				throw new IllegalOperationError("Function has not been migrated/implemented yet. Please help us out!!)");
+				if (cRange) {
+					
+					//Row list, Column range
+					try {
+						if (c0 <= c1) {
+							for (i = 0; i < rvect.length; i++) {
+								for (j = c0; j <= c1; j++) {
+									B[i][j - c0] = A[rvect[i]][j];
+								}
+							}
+						} else {
+							for (i = 0; i < rvect.length; i++) {
+								for (j = c0; j >= c1; j--) {
+									B[i][c0 - j] = A[rvect[i]][j];
+								}
+							}
+						}
+					}
+					catch (e:Error) {
+						throw new RangeError("Submatrix indices are out of bounds.");
+					}
+					
+				} else {
+					
+					//Row list, Column list
+					try {
+						for (i = 0; i < rvect.length; i++) {
+							for (j = 0; j < cvect.length; j++) {
+								B[i][j] = A[rvect[i]][cvect[j]];
+							}
+						}
+					}
+					catch (e:Error) {
+						throw new RangeError("Submatrix indices are out of bounds.");
+					}
+					
+				}
 			}
 		}
 		
@@ -559,8 +579,7 @@ package {
 		   @param c    Array of column indices.
 		   @param X    A(r(:),c(:))
 		   @exception  ArrayIndexOutOfBoundsException Submatrix indices
-		 */
-		/*public void setMatrix (int[] r, int[] c, Matrix X) {
+		 */ /*public void setMatrix (int[] r, int[] c, Matrix X) {
 		   try {
 		   for (int i = 0; i < r.length; i++) {
 		   for (int j = 0; j < c.length; j++) {
@@ -578,8 +597,7 @@ package {
 		   @param j1   Final column index
 		   @param X    A(r(:),j0:j1)
 		   @exception  ArrayIndexOutOfBoundsException Submatrix indices
-		 */
-		/*public void setMatrix (int[] r, int j0, int j1, Matrix X) {
+		 */ /*public void setMatrix (int[] r, int j0, int j1, Matrix X) {
 		   try {
 		   for (int i = 0; i < r.length; i++) {
 		   for (int j = j0; j <= j1; j++) {
@@ -597,8 +615,7 @@ package {
 		   @param c    Array of column indices.
 		   @param X    A(i0:i1,c(:))
 		   @exception  ArrayIndexOutOfBoundsException Submatrix indices
-		 */
-		/*public void setMatrix (int i0, int i1, int[] c, Matrix X) {
+		 */ /*public void setMatrix (int i0, int i1, int[] c, Matrix X) {
 		   try {
 		   for (int i = i0; i <= i1; i++) {
 		   for (int j = 0; j < c.length; j++) {
@@ -677,7 +694,7 @@ package {
 		 */
 		public function transpose():Matrix {
 			var X:Matrix = new Matrix(n, m);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[j][i] = A[i][j];
@@ -748,7 +765,7 @@ package {
 		 */
 		public function uminus():Matrix {
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = -A[i][j];
@@ -765,7 +782,7 @@ package {
 		public function plus(B:Matrix):Matrix {
 			checkMatrixDimensions(B);
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = A[i][j] + B.A[i][j];
@@ -795,7 +812,7 @@ package {
 		public function minus(B:Matrix):Matrix {
 			checkMatrixDimensions(B);
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = A[i][j] - B.A[i][j];
@@ -825,7 +842,7 @@ package {
 		public function arrayTimes(B:Matrix):Matrix {
 			checkMatrixDimensions(B);
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = A[i][j] * B.A[i][j];
@@ -855,7 +872,7 @@ package {
 		public function arrayRightDivide(B:Matrix):Matrix {
 			checkMatrixDimensions(B);
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = A[i][j] / B.A[i][j];
@@ -885,7 +902,7 @@ package {
 		public function arrayLeftDivide(B:Matrix):Matrix {
 			checkMatrixDimensions(B);
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = B.A[i][j] / A[i][j];
@@ -914,7 +931,7 @@ package {
 		 */
 		public function timesSC(s:Number):Matrix {
 			var X:Matrix = new Matrix(m, n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			for (var i:int = 0; i < m; i++) {
 				for (var j:int = 0; j < n; j++) {
 					C[i][j] = s * A[i][j];
@@ -946,7 +963,7 @@ package {
 				throw new ArgumentError("Matrix inner dimensions must agree.");
 			}
 			var X:Matrix = new Matrix(m, B.n);
-			var C:Vector.<Vector.<Number>> = X.getArray();
+			var C:Vector.<Vector.<Number>> = X.data;
 			var Bcolj:Vector.<Number> = new Vector.<Number>(n);
 			for (var j:int = 0; j < B.n; j++) {
 				for (var k:int = 0; k < n; k++) {
@@ -967,48 +984,42 @@ package {
 		/** LU Decomposition
 		   @return     LUDecomposition
 		   @see LUDecomposition
-		 */
-		/*public function lu():LUDecomposition {
+		 */ /*public function lu():LUDecomposition {
 		   return new LUDecomposition(this);
 		 }*/
 		
 		/** QR Decomposition
 		   @return     QRDecomposition
 		   @see QRDecomposition
-		 */
-		/* public QRDecomposition qr () {
+		 */ /* public QRDecomposition qr () {
 		   return new QRDecomposition(this);
 		 }*/
 		
 		/** Cholesky Decomposition
 		   @return     CholeskyDecomposition
 		   @see CholeskyDecomposition
-		 */
-		/*public CholeskyDecomposition chol () {
+		 */ /*public CholeskyDecomposition chol () {
 		   return new CholeskyDecomposition(this);
 		 }*/
 		
 		/** Singular Value Decomposition
 		   @return     SingularValueDecomposition
 		   @see SingularValueDecomposition
-		 */
-		/*public SingularValueDecomposition svd () {
+		 */ /*public SingularValueDecomposition svd () {
 		   return new SingularValueDecomposition(this);
 		 }*/
 		
 		/** Eigenvalue Decomposition
 		   @return     EigenvalueDecomposition
 		   @see EigenvalueDecomposition
-		 */
-		/*public EigenvalueDecomposition eig () {
+		 */ /*public EigenvalueDecomposition eig () {
 		   return new EigenvalueDecomposition(this);
 		 }*/
 		
 		/** Solve A*X = B
 		   @param B    right hand side
 		   @return     solution if A is square, least squares solution otherwise
-		 */
-		/*public Matrix solve (Matrix B) {
+		 */ /*public Matrix solve (Matrix B) {
 		   return (m == n ? (new LUDecomposition(this)).solve(B) :
 		   (new QRDecomposition(this)).solve(B));
 		 }*/
@@ -1016,36 +1027,31 @@ package {
 		/** Solve X*A = B, which is also A'*X' = B'
 		   @param B    right hand side
 		   @return     solution if A is square, least squares solution otherwise.
-		 */
-		/*public Matrix solveTranspose (Matrix B) {
+		 */ /*public Matrix solveTranspose (Matrix B) {
 		   return transpose().solve(B.transpose());
 		 }*/
 		
 		/** Matrix inverse or pseudoinverse
 		   @return     inverse(A) if A is square, pseudoinverse otherwise.
-		 */
-		/*public Matrix inverse () {
+		 */ /*public Matrix inverse () {
 		   return solve(identity(m,m));
 		 }*/
 		
 		/** Matrix determinant
 		   @return     determinant
-		 */
-		/*public double det () {
+		 */ /*public double det () {
 		   return new LUDecomposition(this).det();
 		 }*/
 		
 		/** Matrix rank
 		   @return     effective numerical rank, obtained from SVD.
-		 */
-		/*public int rank () {
+		 */ /*public int rank () {
 		   return new SingularValueDecomposition(this).rank();
 		 }*/
 		
 		/** Matrix condition (2 norm)
 		 * @return     ratio of largest to smallest singular value.
-		 */
-		/*public double cond () {
+		 */ /*public double cond () {
 		   return new SingularValueDecomposition(this).cond();
 		 }*/
 		
@@ -1061,7 +1067,7 @@ package {
 		}
 		
 		public function print(decimal:Number):void {
-			var A:Vector.<Vector.<Number>> = this.getArray();
+			var A:Vector.<Vector.<Number>> = this.data;
 			trace("Matrix:");
 			var precision:Number = Math.pow(10, decimal);
 			var line:String = "";
@@ -1080,8 +1086,7 @@ package {
 		 * @param output Output stream.
 		 * @param w      Column width.
 		 * @param d      Number of digits after the decimal.
-		 */
-		/*public void print (PrintWriter output, int w, int d) {
+		 */ /*public void print (PrintWriter output, int w, int d) {
 		   DecimalFormat format = new DecimalFormat();
 		   format.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.US));
 		   format.setMinimumIntegerDigits(1);
@@ -1102,8 +1107,7 @@ package {
 		 * whitespace, all the elements for each row appear on a single line,
 		 * the last row is followed by a blank line.
 		 * @param input the input stream.
-		 */
-		/*public static Matrix read (BufferedReader input) throws java.io.IOException {
+		 */ /*public static Matrix read (BufferedReader input) throws java.io.IOException {
 		   StreamTokenizer tokenizer= new StreamTokenizer(input);
 		
 		   // Although StreamTokenizer will parse numbers, it doesn't recognize
@@ -1153,7 +1157,7 @@ package {
 		/* ------------------------
 		   Private Methods
 		 * ------------------------ */
-		   
+		
 		/** Check if size(A) == size(B) **/
 		private function checkMatrixDimensions(B:Matrix):void {
 			if (B.m != m || B.n != n) {
@@ -1166,8 +1170,16 @@ package {
 		 * ------------------------ */
 		
 		/**
+		 * Access the internal two-dimensional array.
+		 * @return     Reference to the two-dimensional array of matrix elements.
+		 */
+		public function get data():Vector.<Vector.<Number>> {
+			return A;
+		}
+		
+		/**
 		 * Get row dimension.
-		 * 
+		 *
 		 * @return     m, the number of rows.
 		 */
 		public function get rows():int {
@@ -1176,7 +1188,7 @@ package {
 		
 		/**
 		 * Get column dimension.
-		 * 
+		 *
 		 * @return     n, the number of columns.
 		 */
 		public function get columns():int {
